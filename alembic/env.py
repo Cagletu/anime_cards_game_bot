@@ -1,33 +1,33 @@
-п»їimport os
+import os
 import sys
 from logging.config import fileConfig
 from sqlalchemy import engine_from_config, pool
 from alembic import context
 from dotenv import load_dotenv
 
-# Р—Р°РіСЂСѓР¶Р°РµРј .env
+# Загружаем .env
 load_dotenv()
 
 config = context.config
 
-# РќР°СЃС‚СЂРѕР№РєР° Р»РѕРіРіРµСЂР°
+# Настройка логгера
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-# Р‘РµСЂРµРј URL РР— .env Р¤РђР™Р›Рђ (os.getenv, РќР• os.environ!)
+# Берем URL ИЗ .env ФАЙЛА (os.getenv, НЕ os.environ!)
 database_url = os.getenv('DATABASE_URL_SYNC')
 if not database_url:
     database_url = os.getenv('DATABASE_URL')
 if not database_url:
-    raise ValueError('РќРµС‚ DATABASE_URL РІ .env')
+    raise ValueError('Нет DATABASE_URL в .env')
 
-# Р”Р»СЏ РјРёРіСЂР°С†РёР№ Р’РЎР•Р“Р”Рђ sync
+# Для миграций ВСЕГДА sync
 if 'asyncpg' in database_url:
     database_url = database_url.replace('postgresql+asyncpg', 'postgresql+psycopg2')
 
 config.set_main_option('sqlalchemy.url', database_url)
 
-# РџР РћРЎРўРђРЇ Р±Р°Р·Р° Р±РµР· РјРѕРґРµР»РµР№ (РґР»СЏ С‚РµСЃС‚Р°)
+# ПРОСТАЯ база без моделей (для теста)
 from sqlalchemy.ext.declarative import declarative_base
 target_metadata = declarative_base().metadata
 

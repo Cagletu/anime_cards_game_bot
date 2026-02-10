@@ -1,34 +1,34 @@
-п»їimport os
+import os
 import sys
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 from dotenv import load_dotenv
 
-# Р—Р°РіСЂСѓР¶Р°РµРј .env
+# Загружаем .env
 load_dotenv()
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 if not DATABASE_URL:
-    raise ValueError("DATABASE_URL РЅРµ РЅР°Р№РґРµРЅ РІ .env С„Р°Р№Р»Рµ")
+    raise ValueError("DATABASE_URL не найден в .env файле")
 
 APP_DEBUG = os.getenv("APP_DEBUG", "False").lower() == "true"
 
-# РћРїСЂРµРґРµР»СЏРµРј, Р·Р°РїСѓС‰РµРЅРѕ Р»Рё РёР· alembic
+# Определяем, запущено ли из alembic
 is_alembic = False
 if sys.argv and len(sys.argv) > 0:
     script_name = sys.argv[0].lower()
     is_alembic = "alembic" in script_name
 
 if is_alembic:
-    # Р”Р»СЏ alembic - СЃРёРЅС…СЂРѕРЅРЅС‹Р№ engine
+    # Для alembic - синхронный engine
     sync_url = DATABASE_URL.replace("postgresql+asyncpg", "postgresql")
     from sqlalchemy import create_engine
     engine = create_engine(sync_url, echo=APP_DEBUG)
 else:
-    # Р”Р»СЏ РїСЂРёР»РѕР¶РµРЅРёСЏ - Р°СЃРёРЅС…СЂРѕРЅРЅС‹Р№
+    # Для приложения - асинхронный
     engine = create_async_engine(DATABASE_URL, echo=APP_DEBUG, future=True)
 
-# Р‘Р°Р·РѕРІС‹Р№ РєР»Р°СЃСЃ РґР»СЏ РјРѕРґРµР»РµР№
+# Базовый класс для моделей
 Base = declarative_base()
 
 if not is_alembic:
